@@ -9,11 +9,14 @@ export const validateImageFile = (req: Request, res: Response, next: NextFunctio
     return;
   }
 
-  // Additional file validation
-  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  if (!allowedMimeTypes.includes(req.file.mimetype)) {
+  // Additional file validation - more flexible approach
+  const isValidImage = req.file.mimetype.startsWith('image/') || 
+                      req.file.originalname.match(/\.(jpg|jpeg|png|webp|avif)$/i);
+  
+  if (!isValidImage) {
+    console.log('File validation failed for:', req.file.mimetype, req.file.originalname);
     res.status(400).json({
-      error: 'Invalid file type. Only JPEG, PNG, and WEBP images are allowed.',
+      error: 'Invalid file type. Only image files are allowed.',
       code: 'INVALID_FILE_TYPE'
     });
     return;

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const backendFormData = new FormData()
     backendFormData.append('image', image)
 
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001'
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3003'
     const response = await fetch(`${backendUrl}/api/remove-background`, {
       method: 'POST',
       body: backendFormData,

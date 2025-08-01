@@ -13,11 +13,21 @@ const upload = multer({
     fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/png,image/webp').split(',');
+    console.log('File received:', {
+      fieldname: file.fieldname,
+      originalname: file.originalname,
+      mimetype: file.mimetype
+    });
     
-    if (allowedTypes.includes(file.mimetype)) {
+    // More flexible file type checking
+    const isImage = file.mimetype.startsWith('image/') || 
+                   file.originalname.match(/\.(jpg|jpeg|png|webp)$/i);
+    
+    if (isImage) {
+      console.log('File type accepted:', file.mimetype);
       cb(null, true);
     } else {
+      console.log('File type rejected:', file.mimetype);
       cb(new Error('Invalid file type. Only JPEG, PNG, and WEBP images are allowed.'));
     }
   },
@@ -36,6 +46,10 @@ router.post('/remove-background',
     }
 
     try {
+      console.log('Starting background removal for file:', req.file.originalname);
+      console.log('File size:', req.file.size, 'bytes');
+      console.log('File mimetype:', req.file.mimetype);
+      
       const processedImageBuffer = await removeBackground(req.file.buffer);
       
       res.set({

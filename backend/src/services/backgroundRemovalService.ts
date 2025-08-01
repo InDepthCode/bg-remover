@@ -10,14 +10,25 @@ export async function removeBackground(imageBuffer: Buffer): Promise<Buffer> {
   }
 
   try {
+    console.log('Processing image with Remove.bg API...');
+    
+    // Convert any image format to PNG for compatibility with Remove.bg
+    const convertedBuffer = await sharp(imageBuffer)
+      .png()
+      .toBuffer();
+    
+    console.log('Image converted to PNG format');
+
     // Create form data for the API request
     const formData = new FormData();
-    formData.append('image_file', imageBuffer, {
+    formData.append('image_file', convertedBuffer, {
       filename: 'image.png',
       contentType: 'image/png'
     });
     formData.append('size', 'auto');
     formData.append('format', 'png');
+
+    console.log('Sending request to Remove.bg API...');
 
     // Make request to remove.bg API
     const response = await axios.post('https://api.remove.bg/v1.0/removebg', formData, {
@@ -30,14 +41,18 @@ export async function removeBackground(imageBuffer: Buffer): Promise<Buffer> {
     });
 
     if (response.status !== 200) {
+      console.error('Remove.bg API error:', response.status, response.statusText);
       throw new Error(`Remove.bg API returned status ${response.status}`);
     }
+
+    console.log('Remove.bg API response received successfully');
 
     // Process the result with Sharp for optimization
     const processedBuffer = await sharp(Buffer.from(response.data))
       .png({ quality: 90, compressionLevel: 6 })
       .toBuffer();
 
+    console.log('Image processing completed successfully');
     return processedBuffer;
     
   } catch (error) {
